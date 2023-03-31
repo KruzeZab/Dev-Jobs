@@ -10,22 +10,33 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 
 import {
   Menu as MenuIcon,
   DarkMode as DarkModeIcon,
-  // LightMode as LightModeIcon,
+  LightMode as LightModeIcon,
   HelpOutline as HelpOutlineIcon,
 } from "@mui/icons-material";
 
-import { useState } from "react";
-// import { NAV_ITEMS } from '../../data';
+import { useContext, useMemo, useState } from "react";
+import { NAV_ITEMS } from "../../data";
+import { ColorModeContext } from "../../theme/ColorModeContext";
 
-const pages = ["Products", "Pricing", "Blog", "Contact", "Results"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 const Header = () => {
+  const theme = useTheme();
+  const isMediumScreen = useMediaQuery(theme.breakpoints.up("md"));
+
   return (
     <AppBar
       position="static"
@@ -38,8 +49,7 @@ const Header = () => {
     >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
-          <DesktopBranding />
-          <MobileBranding />
+          {isMediumScreen ? <DesktopNav /> : <MobileNav />}
           <NavRightMenu />
         </Toolbar>
       </Container>
@@ -47,15 +57,16 @@ const Header = () => {
   );
 };
 
-function DesktopBranding() {
+function DesktopNav() {
   return (
     <>
       {/* Logo */}
       <Typography
         variant="h6"
         noWrap
-        component="a"
-        href="/"
+        component={RouterLink}
+        to="/"
+        replace
         sx={{
           mr: 2,
           display: { xs: "none", md: "flex" },
@@ -68,10 +79,12 @@ function DesktopBranding() {
         DeveloperJobs
       </Typography>
       <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
-        {pages.map((page) => (
+        {NAV_ITEMS.map((item) => (
           <MuiLink
-            href="/"
-            key={page}
+            component={RouterLink}
+            to={item.pathname}
+            replace
+            key={item.pathname}
             sx={{
               my: 2,
               transition: "color .2s ease-in-out",
@@ -85,7 +98,7 @@ function DesktopBranding() {
               },
             }}
           >
-            {page}
+            {item.label}
           </MuiLink>
         ))}
       </Box>
@@ -95,6 +108,10 @@ function DesktopBranding() {
 
 function NavRightMenu() {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+
+  const colorMode = useContext(ColorModeContext);
+
+  const theme = useTheme();
 
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorElUser(event.currentTarget);
@@ -113,30 +130,43 @@ function NavRightMenu() {
         gap: 2,
       }}
     >
-      <Tooltip title="Toggle theme">
-        <IconButton
-          aria-label="toggle theme"
-          sx={{
-            "&:hover": {
-              bgcolor: "transparent",
-            },
-          }}
-        >
-          <DarkModeIcon />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Help and support">
-        <IconButton
-          aria-label="help and support"
-          sx={{
-            "&:hover": {
-              bgcolor: "transparent",
-            },
-          }}
-        >
-          <HelpOutlineIcon />
-        </IconButton>
-      </Tooltip>
+      <Box>
+        <Tooltip title="Toggle theme">
+          <IconButton
+            onClick={colorMode.toggleColorMode}
+            aria-label="toggle theme"
+            sx={{
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+            }}
+          >
+            {theme.palette.mode === "light" ? (
+              <DarkModeIcon />
+            ) : (
+              <LightModeIcon />
+            )}
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <Box pr={1}>
+        <Tooltip title="Help and support">
+          <IconButton
+            component={RouterLink}
+            to="guide/"
+            replace
+            aria-label="help and support"
+            sx={{
+              "&:hover": {
+                bgcolor: "transparent",
+              },
+            }}
+          >
+            <HelpOutlineIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
       <Box>
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
           <Avatar
@@ -148,7 +178,7 @@ function NavRightMenu() {
         {/* Menu dropdown for user profile */}
         <Menu
           sx={{ mt: "45px" }}
-          id="menu-appbar"
+          id="devjobs-navbar"
           anchorEl={anchorElUser}
           anchorOrigin={{
             vertical: "top",
@@ -173,39 +203,119 @@ function NavRightMenu() {
   );
 }
 
-function MobileBranding() {
+function MobileNav() {
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        display: { xs: "flex", md: "none" },
+        alignItems: "center",
+      }}
+    >
+      <>
+        <MobileNavMenu /> {/* Menu Icon button and drawer */}
+        <Typography
+          variant="h6"
+          noWrap
+          component={RouterLink}
+          to="/"
+          replace
+          sx={{
+            display: { xs: "flex", md: "none" },
+            flexGrow: 1,
+            color: "primary.main",
+            fontFamily: "monospace",
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          DevJobs
+        </Typography>
+      </>
+    </Box>
+  );
+}
+
+function MobileNavMenu() {
+  const [menuActive, setMenuActive] = useState<boolean>(false);
+
+  const toggleDrawer =
+    (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
+      if (
+        event.type === "keydown" &&
+        ((event as React.KeyboardEvent).key === "Tab" ||
+          (event as React.KeyboardEvent).key === "Shift")
+      ) {
+        return;
+      }
+
+      setMenuActive(open);
+    };
+
+  const renderList = useMemo(() => {
+    return (
+      <Box
+        sx={{
+          width: 250,
+        }}
+        role="presentation"
+        onClick={toggleDrawer(false)}
+        onKeyDown={toggleDrawer(false)}
+      >
+        <List>
+          {NAV_ITEMS.map((item) => (
+            <ListItem key={item.pathname} disablePadding>
+              <ListItemButton>
+                <ListItemText primary={item.label} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+    );
+  }, [toggleDrawer]);
+
   return (
     <>
-      <Typography
-        variant="h6"
-        noWrap
-        component="a"
-        href="/"
-        sx={{
-          mr: 2,
-          display: { xs: "flex", md: "none" },
-          flexGrow: 1,
-          color: "primary.main",
-          fontFamily: "monospace",
-          fontWeight: 700,
-          textDecoration: "none",
-        }}
+      <IconButton
+        size="large"
+        sx={{ mr: 1 }}
+        aria-label="open navigation menu"
+        aria-controls="devjobs-navbar"
+        aria-haspopup="true"
+        onClick={toggleDrawer(true)}
+        color="inherit"
       >
-        DevJobs
-      </Typography>
-      <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="menu-appbar"
-          aria-haspopup="true"
-          // onClick={handleOpenNavMenu}
-          color="inherit"
-        >
-          <MenuIcon />
-          {/* Todo: Render sidebar for nav here */}
-        </IconButton>
-      </Box>
+        <MenuIcon />
+      </IconButton>
+
+      <Drawer
+        anchor="left"
+        open={menuActive}
+        onClose={toggleDrawer(false)}
+        aria-describedby="devjobs-navbar"
+      >
+        <Box mt={2} ml={2} mb={1.5}>
+          <Typography
+            variant="h6"
+            noWrap
+            component={RouterLink}
+            to="/"
+            replace
+            sx={{
+              display: { xs: "flex", md: "none" },
+              flexGrow: 1,
+              color: "primary.main",
+              fontFamily: "monospace",
+              fontWeight: 700,
+              textDecoration: "none",
+            }}
+          >
+            DevJobs
+          </Typography>
+        </Box>
+        {renderList}
+      </Drawer>
     </>
   );
 }
