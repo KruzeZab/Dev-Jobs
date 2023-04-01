@@ -17,6 +17,9 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Button,
+  ListItemIcon,
+  MenuList,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -25,6 +28,8 @@ import {
   DarkMode as DarkModeIcon,
   LightMode as LightModeIcon,
   HelpOutline as HelpOutlineIcon,
+  AccountCircleOutlined as AccountCircleOutlinedIcon,
+  MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 
 import { useContext, useMemo, useState } from "react";
@@ -66,7 +71,6 @@ function DesktopNav() {
         noWrap
         component={RouterLink}
         to="/"
-        replace
         sx={{
           mr: 2,
           display: { xs: "none", md: "flex" },
@@ -83,7 +87,6 @@ function DesktopNav() {
           <MuiLink
             component={RouterLink}
             to={item.pathname}
-            replace
             key={item.pathname}
             sx={{
               my: 2,
@@ -108,18 +111,125 @@ function DesktopNav() {
 
 function NavRightMenu() {
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+  const [anchorElMenu, setAnchorElMenu] = useState<null | HTMLElement>(null);
+
+  // eslint-disable-next-line
+  const [authenticated, _] = useState<boolean>(true);
 
   const colorMode = useContext(ColorModeContext);
-
   const theme = useTheme();
-
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget);
-  };
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const handleCloseActionMenu = () => {
+    setAnchorElMenu(null);
+  };
+
+  const handleThemeToggle = () => {
+    colorMode.toggleColorMode();
+    setAnchorElMenu(null);
+  };
+
+  const renderAuthAction = useMemo(() => {
+    if (!authenticated) {
+      return (
+        <Button
+          variant="outlined"
+          disableElevation
+          startIcon={<AccountCircleOutlinedIcon />}
+        >
+          Sign in
+        </Button>
+      );
+    } else {
+      return (
+        <Box>
+          <IconButton
+            onClick={(event) => { setAnchorElUser(event.currentTarget); }}
+            sx={{ p: 0 }}
+          >
+            <Avatar
+              alt="Remy Sharp"
+              src="https://picsum.photos/80"
+              sx={{ width: 32, height: 32 }}
+            />
+          </IconButton>
+          {/* Menu dropdown for user profile */}
+          <Menu
+            sx={{ mt: "45px" }}
+            id="devjobs-navbar"
+            anchorEl={anchorElUser}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            keepMounted
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            open={Boolean(anchorElUser)}
+            onClose={handleCloseUserMenu}
+          >
+            {settings.map((setting) => (
+              <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <Typography textAlign="center">{setting}</Typography>
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
+      );
+    }
+  }, [authenticated, anchorElUser]);
+
+  const renderActionMenu = useMemo(() => {
+    return (
+      <Menu
+        // dense
+        sx={{ mt: "10px" }}
+        id="more-actions-menu"
+        anchorEl={anchorElMenu}
+        open={Boolean(anchorElMenu)}
+        onClose={handleCloseActionMenu}
+        MenuListProps={{
+          "aria-labelledby": "more-actions-button",
+        }}
+      >
+        <MenuList dense sx={{ p: 0 }}>
+          <MenuItem
+            onClick={handleCloseActionMenu}
+            component={RouterLink}
+            to="/"
+            replace
+          >
+            <ListItemIcon>
+              <HelpOutlineIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Help & Support" />
+          </MenuItem>
+
+          <MenuItem onClick={handleThemeToggle}>
+            <ListItemIcon>
+              {theme.palette.mode === "light" ? (
+                <DarkModeIcon />
+              ) : (
+                <LightModeIcon />
+              )}
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                theme.palette.mode === "light"
+                  ? "Enable Dark Mode"
+                  : "Enable Light Mode"
+              }
+            />
+          </MenuItem>
+        </MenuList>
+      </Menu>
+    );
+  }, [anchorElMenu, handleCloseActionMenu]);
 
   return (
     <Box
@@ -130,74 +240,24 @@ function NavRightMenu() {
         gap: 2,
       }}
     >
+      {renderAuthAction}
       <Box>
-        <Tooltip title="Toggle theme">
+        <Tooltip title="More actions">
           <IconButton
-            onClick={colorMode.toggleColorMode}
-            aria-label="toggle theme"
-            sx={{
-              "&:hover": {
-                bgcolor: "transparent",
-              },
-            }}
+            onClick={(event) => { setAnchorElMenu(event.currentTarget); }}
+            aria-label="More actions"
+            sx={{ p: 0 }}
+            id="more-actions-button"
+            aria-controls={
+              anchorElMenu ? "more-actions-menu" : undefined
+            }
+            aria-haspopup="true"
+            aria-expanded={anchorElMenu ? "true" : undefined}
           >
-            {theme.palette.mode === "light" ? (
-              <DarkModeIcon />
-            ) : (
-              <LightModeIcon />
-            )}
+            <MoreVertIcon />
           </IconButton>
         </Tooltip>
-      </Box>
-
-      <Box pr={1}>
-        <Tooltip title="Help and support">
-          <IconButton
-            component={RouterLink}
-            to="guide/"
-            replace
-            aria-label="help and support"
-            sx={{
-              "&:hover": {
-                bgcolor: "transparent",
-              },
-            }}
-          >
-            <HelpOutlineIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
-      <Box>
-        <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-          <Avatar
-            alt="Remy Sharp"
-            src="https://picsum.photos/80"
-            sx={{ width: 32, height: 32 }}
-          />
-        </IconButton>
-        {/* Menu dropdown for user profile */}
-        <Menu
-          sx={{ mt: "45px" }}
-          id="devjobs-navbar"
-          anchorEl={anchorElUser}
-          anchorOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-          keepMounted
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-          open={Boolean(anchorElUser)}
-          onClose={handleCloseUserMenu}
-        >
-          {settings.map((setting) => (
-            <MenuItem key={setting} onClick={handleCloseUserMenu}>
-              <Typography textAlign="center">{setting}</Typography>
-            </MenuItem>
-          ))}
-        </Menu>
+        {renderActionMenu}
       </Box>
     </Box>
   );
@@ -219,7 +279,6 @@ function MobileNav() {
           noWrap
           component={RouterLink}
           to="/"
-          replace
           sx={{
             display: { xs: "flex", md: "none" },
             flexGrow: 1,
@@ -301,7 +360,6 @@ function MobileNavMenu() {
             noWrap
             component={RouterLink}
             to="/"
-            replace
             sx={{
               display: { xs: "flex", md: "none" },
               flexGrow: 1,
