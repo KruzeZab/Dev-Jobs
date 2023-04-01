@@ -114,7 +114,7 @@ function NavRightMenu() {
   const [anchorElMenu, setAnchorElMenu] = useState<null | HTMLElement>(null);
 
   // eslint-disable-next-line
-  const [authenticated, _] = useState<boolean>(true);
+  const [authenticated, _] = useState<boolean>(false);
 
   const colorMode = useContext(ColorModeContext);
   const theme = useTheme();
@@ -147,7 +147,9 @@ function NavRightMenu() {
       return (
         <Box>
           <IconButton
-            onClick={(event) => { setAnchorElUser(event.currentTarget); }}
+            onClick={(event) => {
+              setAnchorElUser(event.currentTarget);
+            }}
             sx={{ p: 0 }}
           >
             <Avatar
@@ -244,13 +246,13 @@ function NavRightMenu() {
       <Box>
         <Tooltip title="More actions">
           <IconButton
-            onClick={(event) => { setAnchorElMenu(event.currentTarget); }}
+            onClick={(event) => {
+              setAnchorElMenu(event.currentTarget);
+            }}
             aria-label="More actions"
             sx={{ p: 0 }}
             id="more-actions-button"
-            aria-controls={
-              anchorElMenu ? "more-actions-menu" : undefined
-            }
+            aria-controls={anchorElMenu ? "more-actions-menu" : undefined}
             aria-haspopup="true"
             aria-expanded={anchorElMenu ? "true" : undefined}
           >

@@ -1,0 +1,9 @@
+LINKEDIN = "LinkedIn"
+GITHUB = "GitHub"
+TWITTER = "Twitter"
+
+SOCIAL_SITE_OPTIONS = (
+    (LINKEDIN, LINKEDIN),
+    (GITHUB, GITHUB),
+    (TWITTER, TWITTER),
+)
