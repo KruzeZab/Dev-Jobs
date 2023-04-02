@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { Navigate } from "react-router-dom";
 
 interface GuestRouteProps {
@@ -6,12 +6,12 @@ interface GuestRouteProps {
 }
 
 const GuestRoute = ({ outlet }: GuestRouteProps) => {
-  const user = useState(false);
+  const user = useRef<null>(null);
 
-  if (!user) {
+  if (!user.current) {
     return outlet;
   } else {
-    return <Navigate to={{ pathname: "/" }} replace />;
+    return <Navigate to={{ pathname: "/" }} />;
   }
 };
 

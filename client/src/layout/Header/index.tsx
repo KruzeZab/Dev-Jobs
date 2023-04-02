@@ -139,6 +139,8 @@ function NavRightMenu() {
           variant="outlined"
           disableElevation
           startIcon={<AccountCircleOutlinedIcon />}
+          component={RouterLink}
+          to="/signin"
         >
           Sign in
         </Button>

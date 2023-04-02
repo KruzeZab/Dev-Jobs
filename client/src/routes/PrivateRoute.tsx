@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef } from "react";
 import { Navigate } from "react-router-dom";
 
 interface PrivateRouteProps {
@@ -6,12 +6,12 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ outlet }: PrivateRouteProps) => {
-  const user = useState(false);
+  const user = useRef<null>(null);
 
-  if (user) {
+  if (user.current) {
     return outlet;
   } else {
-    return <Navigate to={{ pathname: "login/" }} replace />;
+    return <Navigate to={{ pathname: "/login" }} />;
   }
 };
 
